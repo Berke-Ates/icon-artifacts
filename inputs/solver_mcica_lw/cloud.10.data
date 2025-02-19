@@ -1,6 +1,4 @@
 # fraction
-# alloc
-1
 # rank
 2
 # size
@@ -2891,8 +2889,6 @@
 0.0000000000000000
 0.0000000000000000
 # fractional_std
-# alloc
-1
 # rank
 2
 # size
@@ -5783,8 +5779,6 @@
 1.0000000000000000
 1.0000000000000000
 # overlap_param
-# alloc
-1
 # rank
 2
 # size

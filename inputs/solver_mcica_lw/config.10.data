@@ -1,6 +1,4 @@
 # i_band_from_reordered_g_lw
-# alloc
-1
 # rank
 1
 # size
@@ -149,17 +147,7 @@
 16
 16
 # pdf_sampler
-# ncdf
-1000
-# nfsd
-81
-# fsd1
-0.0000000000000000
-# inv_fsd_interval
-19.999999701976780
 # val
-# alloc
-1
 # rank
 2
 # size
