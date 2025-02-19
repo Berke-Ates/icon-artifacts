@@ -47,6 +47,18 @@ shutil.copy(
     f"main_cpp_files/main_{sdfg_name}.cc", f"{build_loc}/src/cpu/main_{sdfg_name}.cc"
 )
 
+# change the line "constexpr char ROOT[] ="
+# to contain "/home/xdb/icon-artifacts/inputs/solver_mcica_lw/"
+with open(f"{build_loc}/src/cpu/main_{sdfg_name}.cc", "r") as file:
+    lines = file.readlines()
+with open(f"{build_loc}/src/cpu/main_{sdfg_name}.cc", "w") as file:
+  for line in lines:
+    if line.startswith('constexpr char ROOT[] ='):
+      file.write(f'constexpr char ROOT[] = "/home/xdb/icon-artifacts/inputs/{sdfg_name}/";\n')
+    else:
+      file.write(line)
+    
+
 # copy headers/serdesl.h to .dacecache/solver_mcica_lw/include/serdesl.h
 shutil.copy("headers/serdesl.h", f"{build_loc}/include/serdesl.h")
 
