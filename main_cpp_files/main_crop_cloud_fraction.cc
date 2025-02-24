@@ -3,7 +3,7 @@
 #include <string>
 
 #include "crop_cloud_fraction.h"
-#include "serde.h"
+#include "serdeccf.h"
 
 constexpr char ROOT[] = "/home/alex/backup-icon-model/experiments/exclaim_ape_R2B09/";
 
