@@ -32,11 +32,11 @@ main_dict = {
 
 
 # load the sdfg
-sdfg = dace.SDFG.from_file("sdfgs/add_aerosol_optics_simplified_dbg22.sdfgz") # +
+# sdfg = dace.SDFG.from_file("sdfgs/add_aerosol_optics_simplified_dbg22.sdfgz") # ++ (segfault after S2CG)
 # sdfg = dace.SDFG.from_file("sdfgs/calc_surface_spectral_simplified_dbg22.sdfgz") # x
 # sdfg = dace.SDFG.from_file("sdfgs/cloud_optics_fn_438_simplified_dbg22.sdfgz") # failed assertion
-# sdfg = dace.SDFG.from_file("sdfgs/crop_cloud_fraction_simplified_dbg22.sdfgz") # +
-# sdfg = dace.SDFG.from_file("sdfgs/gas_optics_simplified_dbg22.sdfgz") #
+sdfg = dace.SDFG.from_file("sdfgs/crop_cloud_fraction_simplified_dbg22.sdfgz") # +++
+# sdfg = dace.SDFG.from_file("sdfgs/gas_optics_simplified_dbg22.sdfgz") # x
 # sdfg = dace.SDFG.from_file("sdfgs/get_albedos_simplified_dbg22.sdfgz") # x
 # sdfg = dace.SDFG.from_file("sdfgs/solver_mcica_lw_simplified_dbg22.sdfgz") # unsorted double linked list corrupted
 # sdfg = dace.SDFG.from_file("sdfgs/solver_mcica_sw_simplified_dbg22.sdfgz") # bad array new length
