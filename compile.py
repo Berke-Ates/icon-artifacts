@@ -141,7 +141,7 @@ for got, want in zip(got_files, want_files):
             try:
                 got_num = float(got_line)
                 want_num = float(want_line)
-                if not math.isclose(got_num, want_num, rel_tol=1e-5, abs_tol=1e-8):
+                if not math.isclose(got_num, want_num, rel_tol=0, abs_tol=0):
                     print(f"{got} and {want} have numerical differences")
                     found_diff = True
                     break
