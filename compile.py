@@ -1,7 +1,7 @@
 import dace
 import shutil
 import os
-import filecmp
+import math
 
 from dace.transformation.interstate import LoopToMap
 from dace.transformation.passes.struct_to_container_group import StructToContainerGroups
@@ -32,7 +32,7 @@ main_dict = {
 
 
 # Choose the SDFG to run
-path = "sdfgs/add_aerosol_optics_simplified_dbg22.sdfgz"  # ++ (segfault after S2CG)
+path = "sdfgs/add_aerosol_optics_simplified_dbg22.sdfgz"  # ++++
 # path = "sdfgs/calc_surface_spectral_simplified_dbg22.sdfgz" # x header missing
 # path = "sdfgs/cloud_optics_fn_438_simplified_dbg22.sdfgz" # failed assertion
 # path = "sdfgs/crop_cloud_fraction_simplified_dbg22.sdfgz" # ++++
@@ -56,6 +56,11 @@ StructToContainerGroups().apply_pass(sdfg, {})
 
 # Apply LoopToMap
 sdfg.apply_transformations_repeated(LoopToMap)
+
+# Turn all maps to CPU_Multicore
+for node, state in sdfg.all_nodes_recursive():
+        if isinstance(node, dace.nodes.MapEntry):
+            node.map.schedule = dace.ScheduleType.CPU_Multicore
 
 
 ################################################################################
@@ -102,7 +107,7 @@ if exit_code != 0:
 
 
 ################################################################################
-### Execute and diff .got and .want files
+### Execute and compare .got and .want files
 ################################################################################
 
 # execute the compiled program
@@ -113,21 +118,46 @@ if exit_code != 0:
     print("Execution failed")
     exit(1)
 
-# diff the .got and .want files
 # Get list of .got and .want files
 got_files = [f for f in os.listdir() if f.endswith(".got")]
 want_files = [f.replace(".got", ".want") for f in got_files]
 
 # Compare each .got file with its corresponding .want file
-found_diff = False
+found_diff_all = False
 for got, want in zip(got_files, want_files):
-    if not filecmp.cmp(got, want, shallow=False):
-        print(f"Numerical differences found between {got} and {want}")
-        found_diff = True
-    else:
-        print(f"{got} and {want} are identical")
+    found_diff = False
+    with open(got, "r") as got_file, open(want, "r") as want_file:
+        got_lines = got_file.readlines()
+        want_lines = want_file.readlines()
 
-if not found_diff:
+        if len(got_lines) != len(want_lines):
+            print(f"{got} and {want} have different number of lines")
+            found_diff = True
+            continue 
+        
+        # lines containing text should be identical, lines containing numbers should be close
+        for got_line, want_line in zip(got_lines, want_lines):
+            # Are the lines floating point numbers?
+            try:
+                got_num = float(got_line)
+                want_num = float(want_line)
+                if not math.isclose(got_num, want_num, rel_tol=1e-5, abs_tol=1e-8):
+                    print(f"{got} and {want} have numerical differences")
+                    found_diff = True
+                    break
+            
+            except ValueError:
+                # If not, they should be identical
+                if got_line != want_line:
+                    print(f"{got} and {want} have different text")
+                    found_diff = True
+                    break
+    if not found_diff:
+        print(f"{got} and {want} are identical")
+    found_diff_all = found_diff_all or found_diff
+                
+
+if not found_diff_all:
     print("No numerical differences found")
 
 
