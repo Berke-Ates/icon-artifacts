@@ -2,7 +2,7 @@
 #include <iostream>
 #include <filesystem>
 
-#include "serde.h"
+#include "serde_get_albedos.h"
 
 #include "get_albedos.h"
 

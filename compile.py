@@ -2,6 +2,9 @@ import dace
 import shutil
 import os
 
+from dace.transformation.interstate import LoopToMap
+from dace.transformation.passes.struct_to_container_group import StructToContainerGroups
+
 # Mapping of SDFG -> headerfile
 header_dict = {
     "add_aerosol_optics": "serdeae.h",
@@ -21,23 +24,24 @@ main_dict = {
     "cloud_optics_fn_438": "main_cloud_optics.cc",
     "crop_cloud_fraction": "main_crop_cloud_fraction.cc",
     "gas_optics": "main_gas_optics.cc",
-    "get_albedos": "main_get_albedos.cc",
+    "get_albedos": "main_get_albedos.cpp",
     "solver_mcica_lw": "main_solver_mcica_lw.cc",
     "solver_mcica_sw": "main_solver_mcica_sw.cc",
 }
 
 
 # Choose the SDFG to run
-path = "sdfgs/add_aerosol_optics_simplified_dbg22.sdfgz"
-# path = "sdfgs/calc_surface_spectral_simplified_dbg22.sdfgz"
-# path = "sdfgs/cloud_optics_fn_438_simplified_dbg22.sdfgz"
-# path = "sdfgs/crop_cloud_fraction_simplified_dbg22.sdfgz"
-# path = "sdfgs/gas_optics_simplified_dbg22.sdfgz"
-# path = "sdfgs/get_albedos_simplified_dbg22.sdfgz"
-# path = "sdfgs/solver_mcica_lw_simplified_dbg22.sdfgz"
-# path = "sdfgs/solver_mcica_sw_simplified_dbg22.sdfgz"
+# path = "sdfgs/add_aerosol_optics_simplified_dbg22.sdfgz" # ++ (segfault after S2CG)
+# path = "sdfgs/calc_surface_spectral_simplified_dbg22.sdfgz" # x header missing
+# path = "sdfgs/cloud_optics_fn_438_simplified_dbg22.sdfgz" # failed assertion
+# path = "sdfgs/crop_cloud_fraction_simplified_dbg22.sdfgz" # +++
+# path = "sdfgs/gas_optics_simplified_dbg22.sdfgz" # x SDFG compilation killed
+# path = "sdfgs/get_albedos_simplified_dbg22.sdfgz" # exit 1
+# path = "sdfgs/solver_mcica_lw_simplified_dbg22.sdfgz" # unsorted double linked list corrupted
+# path = "sdfgs/solver_mcica_sw_simplified_dbg22.sdfgz" # bad array new length
 
 # Load SDFG
+path = "crop_cloud_fraction_simplified_dbg22full.sdfg"
 sdfg = dace.SDFG.from_file(path)
 
 
@@ -46,6 +50,18 @@ sdfg = dace.SDFG.from_file(path)
 ################################################################################
 
 # TODO: Add Optimizations here for each SDFG
+
+# Apply StructToContainerGroups
+# StructToContainerGroups().apply_pass(sdfg, {})
+
+
+# Apply LoopToMap
+sdfg.apply_transformations_repeated(LoopToMap, validate=False)
+sdfg.save("after_l2m.sdfg")
+
+sdfg.validate()
+
+exit(0)
 
 
 ################################################################################
