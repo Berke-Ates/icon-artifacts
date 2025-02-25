@@ -1,6 +1,7 @@
 import dace
 import shutil
 import os
+import filecmp
 
 from dace.transformation.interstate import LoopToMap
 from dace.transformation.passes.struct_to_container_group import StructToContainerGroups
@@ -31,17 +32,16 @@ main_dict = {
 
 
 # Choose the SDFG to run
-# path = "sdfgs/add_aerosol_optics_simplified_dbg22.sdfgz" # ++ (segfault after S2CG)
+path = "sdfgs/add_aerosol_optics_simplified_dbg22.sdfgz"  # ++ (segfault after S2CG)
 # path = "sdfgs/calc_surface_spectral_simplified_dbg22.sdfgz" # x header missing
 # path = "sdfgs/cloud_optics_fn_438_simplified_dbg22.sdfgz" # failed assertion
-# path = "sdfgs/crop_cloud_fraction_simplified_dbg22.sdfgz" # +++
+# path = "sdfgs/crop_cloud_fraction_simplified_dbg22.sdfgz" # ++++
 # path = "sdfgs/gas_optics_simplified_dbg22.sdfgz" # x SDFG compilation killed
 # path = "sdfgs/get_albedos_simplified_dbg22.sdfgz" # exit 1
 # path = "sdfgs/solver_mcica_lw_simplified_dbg22.sdfgz" # unsorted double linked list corrupted
 # path = "sdfgs/solver_mcica_sw_simplified_dbg22.sdfgz" # bad array new length
 
 # Load SDFG
-path = "crop_cloud_fraction_simplified_dbg22full.sdfg"
 sdfg = dace.SDFG.from_file(path)
 
 
@@ -52,16 +52,10 @@ sdfg = dace.SDFG.from_file(path)
 # TODO: Add Optimizations here for each SDFG
 
 # Apply StructToContainerGroups
-# StructToContainerGroups().apply_pass(sdfg, {})
-
+StructToContainerGroups().apply_pass(sdfg, {})
 
 # Apply LoopToMap
-sdfg.apply_transformations_repeated(LoopToMap, validate=False)
-sdfg.save("after_l2m.sdfg")
-
-sdfg.validate()
-
-exit(0)
+sdfg.apply_transformations_repeated(LoopToMap)
 
 
 ################################################################################
@@ -97,6 +91,60 @@ header_name = header_dict[sdfg_name]
 shutil.copy(f"headers/{header_name}", f"{build_loc}/include/{header_name}")
 
 # compile c++ <SDFG cpp file> <main file> -I../../include -I/<pathtodace>/dace/runtime/include/ -std=c++17 -O0 -ggdb
-os.system(
+exit_code = os.system(
     f"c++ {build_loc}/src/cpu/{sdfg_name}.cpp {build_loc}/src/cpu/{main_name} -I {build_loc}/include -I {dace_include} -std=c++17 -O0 -ggdb -o {sdfg_name}"
 )
+
+# check if compilation was successful
+if exit_code != 0:
+    print("Compilation failed")
+    exit(1)
+
+
+################################################################################
+### Execute and diff .got and .want files
+################################################################################
+
+# execute the compiled program
+exit_code = os.system(f"./{sdfg_name}")
+
+# check if execution was successful
+if exit_code != 0:
+    print("Execution failed")
+    exit(1)
+
+# diff the .got and .want files
+# Get list of .got and .want files
+got_files = [f for f in os.listdir() if f.endswith(".got")]
+want_files = [f.replace(".got", ".want") for f in got_files]
+
+# Compare each .got file with its corresponding .want file
+found_diff = False
+for got, want in zip(got_files, want_files):
+    if not filecmp.cmp(got, want, shallow=False):
+        print(f"Numerical differences found between {got} and {want}")
+        found_diff = True
+    else:
+        print(f"{got} and {want} are identical")
+
+if not found_diff:
+    print("No numerical differences found")
+
+
+################################################################################
+### Cleanup
+################################################################################
+
+# remove the compiled program
+os.remove(sdfg_name)
+
+# remove the .got files
+for got in got_files:
+    os.remove(got)
+
+# remove the .want files
+for want in want_files:
+    os.remove(want)
+
+# remove the .dacecache folder
+shutil.rmtree(build_loc)
