@@ -1159,21 +1159,21 @@ MODULE radiation_cloud
     REAL(KIND = 8) :: cloud_fraction_threshold, cloud_mixing_ratio_threshold
     REAL(KIND = 8) :: sum_mixing_ratio(istartcol_var_428 : iendcol_var_429)
     nlev_var_430 = SIZE(this_var_427 % fraction, 2)
-    ! DO jlev_var_432 = 1, nlev_var_430
-      ! DO jcol_var_431 = istartcol_var_428, iendcol_var_429
-      !  sum_mixing_ratio(jcol_var_431) = 0.0D0
-      ! END DO
-      ! DO jh = 1, 2
+    DO jlev_var_432 = 1, nlev_var_430
+      DO jcol_var_431 = istartcol_var_428, iendcol_var_429
+        sum_mixing_ratio(jcol_var_431) = 0.0D0
+      END DO
+      DO jh = 1, 2
         DO jcol_var_431 = istartcol_var_428, iendcol_var_429
-          sum_mixing_ratio(jcol_var_431) = sum_mixing_ratio(jcol_var_431) + this_var_427 % mixing_ratio(jcol_var_431, 1, 1)
+          sum_mixing_ratio(jcol_var_431) = sum_mixing_ratio(jcol_var_431) + this_var_427 % mixing_ratio(jcol_var_431, jlev_var_432, jh)
         END DO
-      ! END DO
-      ! DO jcol_var_431 = istartcol_var_428, iendcol_var_429
-      !  IF (this_var_427 % fraction(jcol_var_431, jlev_var_432) < cloud_fraction_threshold .OR. sum_mixing_ratio(jcol_var_431) < cloud_mixing_ratio_threshold) THEN
-      !    this_var_427 % fraction(jcol_var_431, jlev_var_432) = 0.0D0
-      !  END IF
-      ! END DO
-    ! END DO
+      END DO
+      DO jcol_var_431 = istartcol_var_428, iendcol_var_429
+        IF (this_var_427 % fraction(jcol_var_431, jlev_var_432) < cloud_fraction_threshold .OR. sum_mixing_ratio(jcol_var_431) < cloud_mixing_ratio_threshold) THEN
+          this_var_427 % fraction(jcol_var_431, jlev_var_432) = 0.0D0
+        END IF
+      END DO
+    END DO
   END SUBROUTINE crop_cloud_fraction
 END MODULE radiation_cloud
 MODULE radiation_cloud_optics
