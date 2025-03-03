@@ -51,16 +51,6 @@ sdfg = dace.SDFG.from_file(path)
 
 # TODO: Add Optimizations here for each SDFG
 
-# Apply StructToContainerGroups
-StructToContainerGroups().apply_pass(sdfg, {})
-
-# Apply LoopToMap
-sdfg.apply_transformations_repeated(LoopToMap)
-
-# Turn all maps to CPU_Multicore
-for node, state in sdfg.all_nodes_recursive():
-        if isinstance(node, dace.nodes.MapEntry):
-            node.map.schedule = dace.ScheduleType.CPU_Multicore
 
 
 ################################################################################
@@ -141,6 +131,7 @@ for got, want in zip(got_files, want_files):
             try:
                 got_num = float(got_line)
                 want_num = float(want_line)
+                # TODO: Adjust rel_tol and abs_tol
                 if not math.isclose(got_num, want_num, rel_tol=0, abs_tol=0):
                     print(f"{got} and {want} have numerical differences")
                     found_diff = True
@@ -177,4 +168,4 @@ for want in want_files:
     os.remove(want)
 
 # remove the .dacecache folder
-shutil.rmtree(build_loc)
+# shutil.rmtree(build_loc)
