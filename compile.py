@@ -3,8 +3,6 @@ import shutil
 import os
 import math
 
-from dace.transformation.interstate import LoopToMap
-from dace.transformation.passes.struct_to_container_group import StructToContainerGroups
 
 # Mapping of SDFG -> headerfile
 header_dict = {
@@ -50,7 +48,6 @@ sdfg = dace.SDFG.from_file(path)
 ################################################################################
 
 # TODO: Add Optimizations here for each SDFG
-
 
 
 ################################################################################
