@@ -55,6 +55,7 @@ sdfg = dace.SDFG.from_file(path)
 ################################################################################
 
 # compile the SDFG
+sdfg.instrument = dace.InstrumentationType.Timer
 sdfg.compile()
 
 # get build location and dace location
@@ -86,6 +87,11 @@ shutil.copy(f"headers/{header_name}", f"{build_loc}/include/{header_name}")
 exit_code = os.system(
     f"c++ {build_loc}/src/cpu/{sdfg_name}.cpp {build_loc}/src/cpu/{main_name} -I {build_loc}/include -I {dace_include} -std=c++17 -O0 -ggdb -o {sdfg_name}"
 )
+
+# CUDA Version
+# exit_code = os.system(
+#     f"nvcc {build_loc}/src/cuda/{sdfg_name}_cuda.cu {build_loc}/src/cpu/{sdfg_name}.cpp {build_loc}/src/cpu/{main_name} -I {build_loc}/include -I {dace_include} -std=c++17 -O0 -o {sdfg_name}"
+# )
 
 # check if compilation was successful
 if exit_code != 0:
@@ -147,6 +153,24 @@ for got, want in zip(got_files, want_files):
 
 if not found_diff_all:
     print("No numerical differences found")
+
+
+################################################################################
+### Measure performance
+################################################################################
+
+# Warmup
+# for i in range(10):
+#     os.system(f"./{sdfg_name}")
+
+# Measure
+# for i in range(10):
+#     sdfg.clear_instrumentation_reports()
+#     os.system(f"./{sdfg_name}")
+#     report = sdfg.get_latest_report()
+#     assert report.events[-1].name == f"SDFG {sdfg.name}"
+#     time = report.events[-1].duration # in us
+#     print(f"GPU,{time}")
 
 
 ################################################################################
